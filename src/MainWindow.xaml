@@ -1,0 +1,409 @@
+﻿<controls:MetroWindow
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+		xmlns:rs="clr-namespace:RockBot2"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		mc:Ignorable="d"
+		x:Name="MainWindow1"
+		x:Class="RockBot2.MainWindow"
+        Title="Rocksmith Request 2"
+		Height="626"
+		Width="668"
+		WindowStartupLocation="CenterScreen"
+		ShowIconOnTitleBar="False"
+		ResizeMode="CanResize"
+		ShowMaxRestoreButton="False"
+		AllowsTransparency="False"
+		MinWidth="560"
+		MinHeight="600">
+	<controls:MetroWindow.WindowCommands>
+		<controls:WindowCommands>
+			<Button
+				x:Name="btnAddCustomEntry"
+				Content="Add custom"
+				Click="btnAddCustomEntry_Click">
+			</Button>
+
+			<Button
+				x:Name="btnConnectIRC"
+				Content="Connect"
+				Click="btnConnectIRC_Click">
+			</Button>
+
+			<Button
+				x:Name="btnDisableRequests"
+				Content="Disable Requests"
+				Click="btnDisableRequests_Click">
+			</Button>
+
+			<Button
+				x:Name="lblRequestsCount"
+				IsEnabled="False">
+			</Button>
+
+			<Button
+				x:Name="btnCheckForUpdates"
+				Content="Update"
+				Click="btnCheckForUpdates_Click">
+				<Button.ToolTip>
+					<ToolTip>
+						<StackPanel>
+							<TextBlock FontSize="12" FontWeight="Bold" Text="Current version"/>
+							<TextBlock FontSize="13" Text="{Binding Source={x:Static rs:Version.FileVersion}}"/>
+						</StackPanel>
+					</ToolTip>
+				</Button.ToolTip>
+			</Button>
+		</controls:WindowCommands>
+	</controls:MetroWindow.WindowCommands>
+	<Grid>
+		<ListBox
+			PreviewMouseDown="lstRequests_PreviewMouseDown"
+			ItemsSource="{Binding}"
+			IsSynchronizedWithCurrentItem="True"
+			AlternationCount="999999999"
+			x:Name="lstRequests"
+			Margin="0,10,0,200"
+			BorderThickness="0"
+			FontSize="16"
+			FontFamily="Segoe UI"
+			Background="Black"
+			ScrollViewer.VerticalScrollBarVisibility="Hidden"
+			ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+			KeyDown="lstRequests_KeyDown"
+			MouseDoubleClick="lstRequests_MouseDoubleClick">
+
+			<ListBox.Resources>
+				<BooleanToVisibilityConverter x:Key="booltovis"/>
+				<rs:InverseBooleanConverter x:Key="booltovisinverse"/>
+				<rs:InvertableBooleanToVisibilityConverter x:Key="ib2v"/>
+				<rs:DimensionSubtract x:Key="dimsubtract"/>
+			</ListBox.Resources>
+
+			<ListBox.ItemTemplate>
+				<DataTemplate>
+					<StackPanel
+						Orientation="Horizontal"
+						HorizontalAlignment="Right"
+						FocusVisualStyle="{x:Null}">
+						<StackPanel>
+							<ScrollViewer VerticalScrollBarVisibility="Disabled"
+								HorizontalScrollBarVisibility="Hidden"
+								x:Name="Scroller"
+								FocusVisualStyle="{x:Null}"
+								MaxWidth="{Binding Value, ElementName=scrollerwidth}">
+								<Grid>
+									<Grid.Triggers>
+										<EventTrigger RoutedEvent="ListBoxItem.LostFocus">
+											<BeginStoryboard x:Name="scrollerstoryboard">
+												<BeginStoryboard.Storyboard>
+													<Storyboard
+														AutoReverse="True"
+														RepeatBehavior="Forever"
+														BeginTime="0:0:0"
+														Timeline.DesiredFrameRate="48">
+																	<DoubleAnimationUsingKeyFrames
+																		Storyboard.TargetName="Mediator"
+																		Storyboard.TargetProperty="ScrollableWidthMultiplier">
+																		<LinearDoubleKeyFrame Value="0" KeyTime="0:0:0"/>
+																		<LinearDoubleKeyFrame Value="0" KeyTime="0:0:3"/>
+																		<LinearDoubleKeyFrame Value="1" KeyTime="0:0:6"/>
+																		<LinearDoubleKeyFrame Value="1" KeyTime="0:0:9"/>
+														</DoubleAnimationUsingKeyFrames>
+													</Storyboard>
+												</BeginStoryboard.Storyboard>
+											</BeginStoryboard>
+										</EventTrigger>
+										<EventTrigger RoutedEvent="ListBoxItem.GotFocus">
+											<StopStoryboard BeginStoryboardName="scrollerstoryboard"/>
+										</EventTrigger>
+									</Grid.Triggers>
+										<TextBox
+											Text="{Binding Request}"
+											FocusVisualStyle="{x:Null}"
+											VerticalAlignment="Center"
+											Foreground="White"
+											Background="Transparent"
+											CaretBrush="White"
+											BorderThickness="10,0,0,0"
+											SelectionBrush="#FF5591B4"
+											BorderBrush="#FF5591B4"
+											MaxLength="72"
+											MinWidth="100"
+											MaxWidth="{Binding Value,
+												ElementName=scrollerwidth,
+												Converter={StaticResource dimsubtract},
+												ConverterParameter=75}"
+											Visibility="{Binding IsSelected,
+												Converter={StaticResource booltovis},
+												RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}}">
+												<TextBox.Style>
+													<Style TargetType="{x:Type TextBox}">
+														<Style.Triggers>
+
+														</Style.Triggers>
+													</Style>
+												</TextBox.Style>
+										</TextBox>
+									<TextBlock
+										Focusable="False"
+										FocusVisualStyle="{x:Null}"
+										x:Name="txtRequest"
+										HorizontalAlignment="Stretch"
+										Text="{Binding Request}"
+										FontFamily="Segoe UI"
+										Visibility="{Binding IsSelected,
+											ConverterParameter=Inverted,
+											Converter={StaticResource ib2v},
+											RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}}">
+									</TextBlock>
+								</Grid>
+							</ScrollViewer>
+							<rs:ScrollViewerOffsetMediator 
+								x:Name="Mediator"
+								ScrollViewer="{Binding ElementName=Scroller}">
+							</rs:ScrollViewerOffsetMediator>
+						</StackPanel>
+						<Border
+							BorderThickness="1,0,0,0"
+							DockPanel.Dock="Right"
+							BorderBrush="White"
+							Padding="9,0,9,0"
+							Margin="9,0,9,0"
+							Opacity="{Binding Value, ElementName=nickopacity}">
+							<Border.Style>
+								<Style TargetType="{x:Type Border}">
+									<Style.Triggers>
+										<DataTrigger Binding="{Binding IsChecked, ElementName=displaynicks}" Value="False">
+											<Setter Property="Visibility" Value="Collapsed"/>
+										</DataTrigger>
+									</Style.Triggers>
+								</Style>
+							</Border.Style>
+
+							<TextBlock
+								Text="{Binding FromUser.Nick}"
+								VerticalAlignment="Bottom"
+								FocusVisualStyle="{x:Null}"
+								Foreground="White"
+								Opacity="{Binding Value, ElementName=nickopacity}"
+								FontWeight="Light">
+								<TextBlock.Style>
+									<Style TargetType="{x:Type TextBlock}">
+										<Style.Triggers>
+											<DataTrigger Binding="{Binding IsChecked, ElementName=displaynicks}" Value="False">
+												<Setter Property="Visibility" Value="Collapsed"/>
+											</DataTrigger>
+										</Style.Triggers>
+									</Style>
+								</TextBlock.Style>
+							</TextBlock>
+						</Border>
+						<Button
+							Content="Delete"
+							FocusVisualStyle="{x:Null}"
+							x:Name="btnDeleteEntry"
+							Click="btnDeleteEntry_Click"
+							Height="27"
+							Width="75"
+							Visibility="{Binding IsSelected,
+								Converter={StaticResource booltovis},
+								RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}}">
+						</Button>
+					</StackPanel>
+
+				</DataTemplate>
+			</ListBox.ItemTemplate>
+
+			<ListBox.ItemContainerStyle>
+				<Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+					<Setter Property="FontSize" Value="{Binding Value, ElementName=normalitemfontsize}"/>
+					<Setter Property="HorizontalContentAlignment" Value="Left"/>
+					<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+
+					<Style.Triggers>
+						<DataTrigger Binding="{Binding IsChecked, ElementName=righttoleft}" Value="True">
+							<Setter Property="HorizontalContentAlignment" Value="Right"/>
+						</DataTrigger>
+
+						<Trigger Property="ItemsControl.AlternationIndex" Value="0">
+							<Setter Property="Height" Value="{Binding Value, ElementName=topitemheight}"/>
+							<Setter Property="FontSize" Value="{Binding Value, ElementName=topitemfontsize}"/>
+						</Trigger>
+					</Style.Triggers>
+				</Style>
+			</ListBox.ItemContainerStyle>
+		</ListBox>
+		<GroupBox
+			Header="settings"
+			Margin="10,0,10,10"
+			Grid.Column="1"
+			VerticalAlignment="Bottom"
+			MouseDown="settingsscrviewer_mousedown">
+			<ScrollViewer
+				Height="147"
+				Margin="0"
+				PreviewMouseDown="settingsscrviewer_mousedown">
+				<Grid
+					Margin="0"
+					HorizontalAlignment="Left">
+					<StackPanel Orientation="Vertical">
+						<StackPanel Orientation="Vertical">
+							<TextBlock Text="IRC Setup"/>
+							<TextBox
+								HorizontalAlignment="Left"
+								Height="23"
+								Margin="0,10,0,0"
+								Text="{Binding ircname}"
+								controls:TextboxHelper.Watermark="IRC Name"
+								VerticalAlignment="Top"
+								Width="120">
+							</TextBox>
+
+							<TextBox
+								HorizontalAlignment="Left"
+								Height="23"
+								Margin="0,10,0,0"
+								Text="{Binding channel}"
+								controls:TextboxHelper.Watermark="Channel"
+								VerticalAlignment="Top"
+								Width="120">
+							</TextBox>
+
+							<TextBox
+								HorizontalAlignment="Left"
+								Height="23" Margin="0,10,0,0"
+								Text="{Binding server}"
+								controls:TextboxHelper.Watermark="Server"
+								VerticalAlignment="Top"
+								Width="120">
+							</TextBox>
+						</StackPanel>
+
+						<StackPanel Orientation="Vertical" Margin="0,30,0,0">
+							<TextBlock Text="Delay between requests (per user)"/>
+							<StackPanel Orientation="Horizontal" Margin="0">
+								<controls:NumericUpDown
+									ValueChanged="numSeconds_ValueChanged"
+									Value="{Binding reqdelayminutes}"
+									VerticalAlignment="Stretch"
+									Margin="0,10,0,0"
+									HorizontalAlignment="Left"
+									Width="120">
+								</controls:NumericUpDown>
+								
+								<TextBlock Margin="5,16,0,0" Text="Minutes"/>
+							</StackPanel>
+
+							<StackPanel Orientation="Horizontal">
+								<controls:NumericUpDown
+									ValueChanged="numSeconds_ValueChanged"
+									Value="{Binding reqdelayseconds}"
+									VerticalAlignment="Stretch"
+									Margin="0,10,0,0"
+									HorizontalAlignment="Left"
+									Width="120">
+								</controls:NumericUpDown>
+								
+								<TextBlock Margin="5,16,0,0" Text="Seconds"/>
+							</StackPanel>
+						</StackPanel>
+
+						<StackPanel Orientation="Vertical" Margin="0,30,0,0">
+							<TextBlock Text="Display"/>
+							<StackPanel Orientation="Horizontal">
+								<controls:NumericUpDown
+									x:Name="topitemfontsize"
+									Value="{Binding topfontsize}"
+									VerticalAlignment="Stretch"
+									Margin="0,10,0,0"
+									HorizontalAlignment="Left"
+									Width="120">
+								</controls:NumericUpDown>
+								
+								<TextBlock Margin="5,16,0,0" Text="Top item font size"/>
+							</StackPanel>
+
+							<StackPanel Orientation="Horizontal">
+								<controls:NumericUpDown
+									x:Name="topitemheight"
+									Value="{Binding topitemheight}"
+									VerticalAlignment="Stretch"
+									Margin="0,10,0,0"
+									HorizontalAlignment="Left"
+									Width="120">
+								</controls:NumericUpDown>
+								
+								<TextBlock Margin="5,16,0,0" Text="Top item height"/>
+							</StackPanel>
+
+							<StackPanel Orientation="Horizontal">
+								<controls:NumericUpDown
+									x:Name="normalitemfontsize"
+									Value="{Binding normalitemfontsize}"
+									VerticalAlignment="Stretch"
+									Margin="0,10,0,0"
+									HorizontalAlignment="Left"
+									Width="120">
+								</controls:NumericUpDown>
+								
+								<TextBlock Margin="5,16,0,0" Text="Normal items font size"/>
+							</StackPanel>
+
+							<StackPanel Orientation="Vertical">
+								<CheckBox
+									Content="Display right to left"
+									x:Name="righttoleft"
+									IsChecked="{Binding righttoleft}"
+									Margin="0,10,0,0">
+								</CheckBox>
+
+								<CheckBox
+									Content="Display nicknames next to requests"
+									x:Name="displaynicks"
+									IsChecked="{Binding displaynicks}"
+									Margin="0,10,0,0">
+								</CheckBox>
+
+								<StackPanel Orientation="Vertical" Margin="0,10,0,0">
+									<TextBlock Margin="0,0,0,0" Text="Nickname opacity"/>
+									<Slider
+										IsEnabled="{Binding IsChecked, ElementName=displaynicks}"
+										x:Name="nickopacity"
+										Maximum="1"
+										Minimum="0"
+										Value="{Binding nickopacity}"
+										LargeChange="0.1"
+										TickFrequency="0.1"
+										SmallChange="0.02">
+									</Slider>
+								</StackPanel>
+
+								<StackPanel Orientation="Vertical">
+									<StackPanel Orientation="Horizontal">
+										<TextBlock Text="Long requests scroll width"/>
+										<TextBlock 
+											Text="{Binding Value, ElementName=scrollerwidth, StringFormat=\{0:0\}}"
+											Margin="10,0,0,0"/>
+									</StackPanel>
+
+									<Slider
+										x:Name="scrollerwidth"
+										Maximum="800"
+										Minimum="100"
+										Value="{Binding scrollerwidth}"
+										LargeChange="0.1"
+										TickFrequency="0.1"
+										SmallChange="0.02">
+									</Slider>
+								</StackPanel>
+							</StackPanel>
+						</StackPanel>
+					</StackPanel>
+				</Grid>
+			</ScrollViewer>
+		</GroupBox>
+	</Grid>
+</controls:MetroWindow>

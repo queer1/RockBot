@@ -8,7 +8,7 @@
 		mc:Ignorable="d"
 		x:Name="MainWindow1"
 		x:Class="RockBot2.MainWindow"
-        Title="Rocksmith Request 2"
+        Title="RockBot"
 		Height="626"
 		Width="668"
 		WindowStartupLocation="CenterScreen"

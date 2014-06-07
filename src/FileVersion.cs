@@ -2,6 +2,6 @@
 {
 	public class Version
 	{
-		public static double FileVersion = 2.500;
+		public static double FileVersion = 2.501;
 	}
 }
